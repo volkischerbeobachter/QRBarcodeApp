@@ -84,7 +84,7 @@ struct QRGeneratorView: View {
                         )
                         .shadow(radius: 6)
                 }
-                .padding(.bottom, max(20, keyboard.currentHeight + 12))
+                .padding(.bottom, max(20, 20))
                 .animation(.easeInOut(duration: 0.25), value: keyboard.currentHeight)
             }
         }

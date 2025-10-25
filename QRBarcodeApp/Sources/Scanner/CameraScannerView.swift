@@ -120,6 +120,7 @@ struct CameraPreviewView: UIViewRepresentable {
 // MARK: - SwiftUI screen
 
 struct CameraScannerView: View {
+    @Environment(\.openURL) private var openURL
     @StateObject private var manager = CameraSessionManager()
     @State private var decodedText: String? = nil
     @State private var isScanning: Bool = false
@@ -133,16 +134,39 @@ struct CameraScannerView: View {
             // Top overlay with decoded result
             VStack {
                 if let t = decodedText, !t.isEmpty {
-                    Text(t)
-                        .font(.headline)
-                        .foregroundStyle(.yellow)
-                        .multilineTextAlignment(.leading)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 16)
-                        .background(.ultraThinMaterial, in: Capsule())
-                        .padding(.top, 12)
-                        .padding(.horizontal, 16)
-                        .transition(.opacity)
+                    let url = urlFromString(t)
+
+                    Group {
+                        if let url {
+                            Button {
+                                openURL(url)
+                            } label: {
+                                Text(t)
+                                    .underline()
+                                    .foregroundStyle(.blue)
+                            }
+                            .buttonStyle(.plain)
+                        } else {
+                            Button {
+                                copyDecodedText()
+                            } label: {
+                                Text(t)
+                                    .foregroundStyle(.yellow)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .font(.headline)
+                    .multilineTextAlignment(.leading)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 16)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .padding(.top, 12)
+                    .padding(.horizontal, 16)
+                    .contextMenu {
+                        Button("Copy") { copyDecodedText() }
+                    }
+                    .transition(.opacity)
                 } else {
                     Spacer().frame(height: 44) // reserve space
                 }
@@ -179,9 +203,7 @@ struct CameraScannerView: View {
                     Circle()
                         .fill(.white)
                         .frame(width: 78, height: 78)
-                        .overlay(
-                            Circle().stroke(Color.white.opacity(0.6), lineWidth: 2)
-                        )
+                        .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 2))
                         .shadow(radius: 8)
                 }
                 .padding(.bottom, 30)
@@ -208,6 +230,26 @@ struct CameraScannerView: View {
         } catch {
             withAnimation { decodedText = "Error: \(error.localizedDescription)" }
         }
+    }
+
+    // MARK: - Helpers
+
+    private func urlFromString(_ text: String) -> URL? {
+        let s = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let url = URL(string: s),
+           let scheme = url.scheme?.lowercased(),
+           ["http", "https"].contains(scheme) {
+            return url
+        }
+        if let url = URL(string: "https://" + s), url.host != nil {
+            return url
+        }
+        return nil
+    }
+
+    private func copyDecodedText() {
+        guard let t = decodedText, !t.isEmpty else { return }
+        UIPasteboard.general.string = t
     }
 }
 
