@@ -1,5 +1,8 @@
 - # Тестове, QRCode
 
+  ## Запис екрану ристрою з працюючим на ньому застосунком:
+  (Screen Recording)[https://github.com/volkischerbeobachter/QRBarcodeApp/blob/main/ScreenRecording.mp4]
+
   ## Першопочаткове технічне завдання:
 
   > Тестове просте, тільки щоб зрозуміти твої навички.
